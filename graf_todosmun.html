@@ -69,14 +69,14 @@
             }
             
             vlrVar = consut_mun[0].ene,
-            tiempo = new Date(consut_mun[0].ano,0,0,0,0,0,0);                    
+            tiempo = new Date(consut_mun[0].ano,1,0,0,0,0,0);                    
             pareja = [[tiempo.getTime(),parseFloat(vlrVar)]];
             var tuplas = [[]]
             for (let item of consut_mun){                
                 for (var x=1; x<=12;x++){
                     vlrVar = item[x],
                     //if (item[0]<1970)
-                    tiempo = new Date(item[0],x-1,1,0,0,0,0);                    
+                    tiempo = new Date(item[0],x-1,1,-5,0,0,0);                    
                     pareja = [[tiempo.getTime(),parseFloat(vlrVar)]];
                     tuplas = tuplas.concat(pareja);
                 } 
