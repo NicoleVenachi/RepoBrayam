@@ -1,23 +1,27 @@
-//var hr_validar = <?php echo "$hrvectul"; ?>;
-var DatoUlti = <?php echo "$ultimoDato"; ?>;
+///// en este archivo se hacen las graficas
+// se sacan las el último dato arrojado por la BD
+var DatoUltiT = <?php echo "$ultimoDato"; ?>;
+var DatoUltiR = <?php echo "$ultimoDato"; ?>;
+var DatoUltiH = <?php echo "$ultimoDato"; ?>;
 Highcharts.stockChart('container', {
     chart: {
         events: {
+            // se actualizará la grfica cada minuto
           load: function () {
-    
-            // set up the updating of the chart each second
+            
             var series = this.series[0];
             setInterval(function () {
-
+            // Con esta parte del código se consulta elultimo dato que está en la BD    
             var dateNew = $.ajax({
                 url:"consulta_dinamica.php",
                 dataType: "text",
                 async: false
             }).responseText;                                          
-            if(dateNew != DatoUlti ){    
+            //si es diferente al ultimo dato recibido entra al if
+            if(dateNew != DatoUltiT ){    
             //if(dateNew == DatoUlti ){    
-                var numDatos = parseFloat(dateNew) - parseFloat(DatoUlti);
-                //var numDatos=2;
+                var numDatos = parseFloat(dateNew) - parseFloat(DatoUltiT);// encuentra el la cantidad de datos desactulizados
+                //Se traen los datos desactualizados                
                 var infAct = $.ajax({
                     type: "POST",
                     url: "cons_ult_datoN.php",
@@ -28,8 +32,10 @@ Highcharts.stockChart('container', {
                     dataType: "json",
                     async: false,   
                     success: function (response) {
+                        // si fue exitosa la consulta se procesa los datos
                       for (var x =0; x<numDatos;x++){
                         hr = response[x].hora;
+                        //separamos a hora de la BD en hora y minutos
                         hrSplit = hr.split(":");
                         minS = hrSplit[1];
                         jornada = minS[2];
@@ -38,7 +44,7 @@ Highcharts.stockChart('container', {
                         }
                         minS = parseInt(minS[0])*10 +parseInt(minS[1]);
                         //response[x].hora = {'hr':hrSplit[0],'min':minS};
-                        
+                        //separamos l fecha en dia, horas y año
                         fecha = response[x].dia; 
                         fechaS = fecha.split("/");
                         timems = new Date(parseInt(fechaS[2])+2000, fechaS[0]-1, fechaS[1], hrSplit[0]-5, minS, 0, 0 );            
@@ -48,17 +54,19 @@ Highcharts.stockChart('container', {
                       }             
                   }     
                 }).responseJSON;
-                //$("#div2").html(infAct[0].tempout);
+                // se gráfica los datos consultados
                 for (var c =(numDatos-1); c>=0;c--){
                     var ejex = infAct[c].time_ms;
                     var ejey = parseFloat (infAct[c].tempout);
                     //series.addPoint(infAct[c].pareja, true, true);
                     series.addPoint([ejex,ejey], true, true);
                 }
-                $("#div2").html(dateNew);                
+                $("#div2").html(dateNew);       
+                // se actualiza elultomo dato traido         
+                DatoUltiT = dateNew;
             }
             
-            $("#div1").html(DatoUlti);
+            $("#div1").html(DatoUltiT);
             }, 1000*5);
           }
         }
@@ -158,16 +166,16 @@ Highcharts.stockChart('huv', {
                 dataType: "text",
                 async: false
             }).responseText;                                          
-            if(dateNew != DatoUlti ){    
+            if(dateNew != DatoUltiH ){    
             //if(dateNew == DatoUlti ){    
-                var numDatos = parseFloat(dateNew) - parseFloat(DatoUlti);
+                var numDatos = parseFloat(dateNew) - parseFloat(DatoUltiH);
                 //var numDatos=2;
                 var infAct = $.ajax({
                     type: "POST",
                     url: "cons_ult_datoN.php",
                     data: {
                      'numDatos' : numDatos,
-                     'variable' : "huiv"
+                     'variable' : "hiuv"
                     },
                     dataType: "json",
                     async: false,   
@@ -187,22 +195,25 @@ Highcharts.stockChart('huv', {
                         fechaS = fecha.split("/");
                         timems = new Date(parseInt(fechaS[2])+2000, fechaS[0]-1, fechaS[1], hrSplit[0]-5, minS, 0, 0 );            
                         response[x].time_ms=timems.getTime();
-                        response[x].pareja = [timems.getTime(),parseFloat(response[x].huiv)];
+                        
+                        //series.addPoint([response[x].time_ms,parseFloat(response[x].huiv)], true, true);
+                        response[x].pareja = [timems.getTime(),parseFloat(response[x].hiuv)];
                         //response[x].dia = {'dia': fechaS[1], 'mes':fechaS[0],'year': parseInt(fechaS[2])+2000,'time_ms': timems.getTime()}
                       }             
                   }     
-                }).responseJSON;
-                //$("#div2").html(infAct[0].tempout);
+                }).responseJSON;                
+                
+                $("#div3").html(infAct);
+                
                 for (var c =(numDatos-1); c>=0;c--){
                     var ejex = infAct[c].time_ms;
-                    var ejey = parseFloat (infAct[c].huiv);
-                    //series.addPoint(infAct[c].pareja, true, true);
+                    var ejey = parseFloat (infAct[c].hiuv);                    
                     series.addPoint([ejex,ejey], true, true);
                 }
-                $("#div2").html(dateNew);                
+                DatoUltiH = dateNew;
             }
             
-            $("#div1").html(DatoUlti);
+            $("#div1").html(DatoUltiH);
             }, 1000*5);
           }
         }
@@ -273,7 +284,7 @@ Highcharts.stockChart('huv', {
             name: 'HUV',
             data: [
                 <?php
-                arreglarDatos($manag_hr, $hora, $temp, $dia, $length);
+                arreglarDatos($manag_hr, $hora, $huiv, $dia, $length);
                     
                 ?>
             ],
@@ -302,9 +313,9 @@ Highcharts.stockChart('rain', {
                 dataType: "text",
                 async: false
             }).responseText;                                          
-            if(dateNew != DatoUlti ){    
+            if(dateNew != DatoUltiR ){    
             //if(dateNew == DatoUlti ){    
-                var numDatos = parseFloat(dateNew) - parseFloat(DatoUlti);
+                var numDatos = parseFloat(dateNew) - parseFloat(DatoUltiR);
                 //var numDatos=2;
                 var infAct = $.ajax({
                     type: "POST",
@@ -345,8 +356,8 @@ Highcharts.stockChart('rain', {
                 }
                 $("#div2").html(dateNew);                
             }
-            DatoUlti = dateNew;
-            $("#div1").html(DatoUlti);
+            DatoUltiR = dateNew;
+            $("#div1").html(DatoUltiR);
             }, 1000*5);
           }
         }

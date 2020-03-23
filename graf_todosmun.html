@@ -1,0 +1,132 @@
+<!DOCTYPE HTML>
+<html>
+
+
+<script src="https://code.highcharts.com/stock/highstock.js"></script>
+<script src="https://code.highcharts.com/stock/modules/data.js"></script>
+<script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+<script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+
+<script src="jquery-3.4.1.min.js"></script>
+
+  <form action=""> 
+    <select name="customers" onchange="consultarMun(this.value)">
+    <option value="">Seleccione el municipio:</option>
+    <option value="db_almaguer">Almaguer</option>
+    <option value="db_argelia_lamiel ">Argelia</option>
+    <option value="db_balboa">Balboa</option>
+    <option value="db_bolivar_riosuarez">Bolivar</option>
+    <option value="db_buenosaires ">Buenos Aires</option>
+    <option value="db_cajibio">Cajibio</option>
+    <option value="db_caldono">Caldono</option>
+    <option value="db_caloto">Caloto</option>
+    <option value="db_corinto">Corinto</option>
+    <option value="db_guapi">Guapi</option>
+    <option value="db_islagorgona ">Isla Gorgona</option>
+    <option value="db_jambalo">Jambalo</option>
+    <option value="db_lasierra">La Sierra</option>
+    <option value="db_lavega ">La Vega</option>
+    <option value="db_mercaderes">Mercaderes</option>
+
+    <option value="db_miranda ">Miranda</option>
+    <option value="db_morales">Moraes</option>
+    <option value="db_patia">Patia</option>
+    <option value="db_piendamo">Piendamo</option>
+    <option value="db_popayan">Popayan</option>
+    <option value="db_purace">Purace</option>
+    <option value="db_rosas ">Rosas</option>
+    <option value="db_sansebastian">San Sebastian</option>
+    <option value="db_satanderdeq">Satander de Q.</option>
+    <option value="db_silvia ">Silvia</option>
+    <option value="db_sotara">Sotara</option>   
+
+    <option value="db_suarez">Suarez</option>
+    <option value="db_tambo">Tambo</option>
+    <option value="db_toribio">Toribio</option>
+    <option value="db_totoro ">Totoro</option>
+    <option value="db_villarica">Villa Rica</option>
+   
+    </select>
+    </form>
+    <div id="container" style="height: 400px; min-width: 310px"></div>
+    <script>
+        //var tuplas = new Map();
+        function consultarMun(str){
+            var consut_mun = $.ajax({
+                type: "POST",
+                url: "consultar_Mun.php",
+                data: {'minicipio' : str},
+                dataType: "json",
+                async: false,
+               
+            }).responseJSON;
+            function objectToMap(o) {
+                let m = new Map()
+                for(let k of Object.keys(o)) {                    
+                    m.set(k, o[k])                       
+                }
+                return m
+            }
+            
+            vlrVar = consut_mun[0].ene,
+            tiempo = new Date(consut_mun[0].ano,0,0,0,0,0,0);                    
+            pareja = [[tiempo.getTime(),parseFloat(vlrVar)]];
+            var tuplas = [[]]
+            for (let item of consut_mun){                
+                for (var x=1; x<=12;x++){
+                    vlrVar = item[x],
+                    //if (item[0]<1970)
+                    tiempo = new Date(item[0],x-1,1,0,0,0,0);                    
+                    pareja = [[tiempo.getTime(),parseFloat(vlrVar)]];
+                    tuplas = tuplas.concat(pareja);
+                } 
+            } 
+            
+            Highcharts.stockChart('container', {
+                rangeSelector: {
+                    buttons: [{
+                        type: 'month',
+                        count: 6,
+                        text: '6m'
+                        
+                    }, {
+                        type: 'year',
+                        count: 1,
+                        text: '1y'
+                    }, {
+                        type: 'year',
+                        count: 5,
+                        text: '5y'
+                    }, {
+                        type: 'year',
+                        count: 10,
+                        text: '10y'			
+                    }, {
+                        type: 'ytd',
+                        text: 'YTD'
+                    }, {
+                        type: 'all',
+                        text: 'All'
+                    }]                
+
+                },
+
+                title: {
+                    text: 'Precipitación '
+                },
+
+                series: [{
+                    name: 'Lluviosidad',
+                    data: tuplas,
+                    tooltip: {
+                        valueDecimals: 2,
+                        valueSuffix: ' cm^3'
+                    }
+                }]
+                });
+        }        
+    </script>
+
+
+    
+</html>
